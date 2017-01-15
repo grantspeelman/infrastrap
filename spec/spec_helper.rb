@@ -19,6 +19,7 @@ RSpec.configure do |config|
     FileUtils.mkdir_p(File.expand_path(__dir__) + "/../tmp")
     FileUtils.remove_dir(File.expand_path(__dir__) + "/../tmp/ansible", true)
     FileUtils.remove_dir(File.expand_path(__dir__) + "/../tmp/capistrano", true)
+    FileUtils.remove_file(File.expand_path(__dir__) + "/../tmp/.gitignore", true)
     FileUtils.remove_file(File.expand_path(__dir__) + "/../tmp/Vagrantfile", true)
     FileUtils.remove_file(File.expand_path(__dir__) + "/../tmp/README.md", true)
     FileUtils.remove_file(File.expand_path(__dir__) + "/../tmp/ansible.cfg", true)

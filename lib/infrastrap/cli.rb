@@ -60,8 +60,10 @@ module Infrastrap
       say "-- deployment role"
       shell.indent do
         directory "ansible/roles/deployment", "#{destination}/roles/deployment"
-        append_to_file "#{destination}/roles/deployment/files/_deploy_home_/.ssh/authorized_keys" do
-          File.read("#{ENV['HOME']}/.ssh/id_rsa.pub")
+        if File.exist?("#{ENV['HOME']}/.ssh/id_rsa.pub")
+          append_to_file "#{destination}/roles/deployment/files/_deploy_home_/.ssh/authorized_keys" do
+            File.read("#{ENV['HOME']}/.ssh/id_rsa.pub")
+          end
         end
       end
       if gem_dependency_names.include?('pg')
