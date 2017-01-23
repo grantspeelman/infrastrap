@@ -3,3 +3,4 @@
 - include: set_enviroment_variables.yml
 - include: placeholder_app.yml
 - include: install_service.yml
+- include: install_ngnix.yml

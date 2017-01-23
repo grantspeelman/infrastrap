@@ -10,8 +10,8 @@ describe Infrastrap::CLI do
   describe 'generate' do
     before :all do
       cli = Infrastrap::CLI.new
-      @repo_url = 'git@github.com:grantspeelman/simple_rails_pg.git'
-      cli.generate('git@github.com:grantspeelman/simple_rails_pg.git', 'tmp')
+      @repo_url = 'https://github.com/grantspeelman/simple_rails_pg.git'
+      cli.generate(@repo_url, 'tmp')
     end
 
     it 'creates README.md' do
