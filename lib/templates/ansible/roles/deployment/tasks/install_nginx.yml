@@ -11,14 +11,6 @@
 - name: link _passenger_site.conf to ngnix sites-enabled
   file: src=/etc/nginx/sites-available/{{app_deploy_name}}.conf dest=/etc/nginx/sites-enabled/{{app_deploy_name}}.conf owner=root group=root state=link
 
-- name: upload ssl crt
-  copy: src=etc/ssl/nginx.crt dest=/etc/ssl/{{app_deploy_name}}.crt owner=root group=root mode=0600
-  notify: nginx reload
-
-- name: upload ssl key
-  copy: src=etc/ssl/nginx.key dest=/etc/ssl/{{app_deploy_name}}.key owner=root group=root mode=0600
-  notify: nginx reload
-
 - name: enable gzip in nginx
   replace: dest=/etc/nginx/nginx.conf regexp="# {{item}}" replace={{item}}
   notify: nginx reload
