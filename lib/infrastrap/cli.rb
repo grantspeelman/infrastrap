@@ -1,4 +1,5 @@
 require 'thor'
+require 'git'
 require 'bundler'
 
 module Infrastrap
@@ -11,24 +12,29 @@ module Infrastrap
     end
 
     desc "generate source destination", "generate infrastructure from project"
-    method_option :repo_url, :desc => "Git Repo url"
-    def generate(destination = nil, source = "./")
-      source = File.expand_path(source)
-      self.bundler_lockfile ||= Bundler::LockfileParser.new(Bundler.read_file("#{source}/Gemfile.lock"))
-      self.project_name = File.basename(source)
-      destination = File.expand_path(destination || "../#{project_name}-infrastructure")
-      say "source: #{source}"
-      say "destination: #{destination}"
-      empty_directory destination
-      template 'gitignore.erb', "#{destination}/.gitignore"
-      template 'README.md.erb', "#{destination}/README.md"
-      template 'Vagrantfile.rb.erb', "#{destination}/Vagrantfile"
-      copy_file "ansible.cfg", "#{destination}/ansible.cfg"
-      shell.indent do
-        generate_ansible "#{destination}/ansible", source
-      end
-      shell.indent do
-        generate_capistrano "#{destination}/capistrano", source
+    def generate(git_url, destination = nil)
+      self.repo_url = git_url
+      Dir.mktmpdir("infastrap") do |source_dir|
+        last = git_url.split('/').last.gsub('.git','')
+        source = "#{source_dir}/#{last}"
+        say 'cloning repo'
+        Git.clone(git_url, source, depth: 1)
+        self.bundler_lockfile ||= Bundler::LockfileParser.new(Bundler.read_file("#{source}/Gemfile.lock"))
+        self.project_name = File.basename(source)
+        destination = File.expand_path(destination || "./#{project_name}-infrastructure")
+        say "source: #{source}"
+        say "destination: #{destination}"
+        empty_directory destination
+        template 'gitignore.erb', "#{destination}/.gitignore"
+        template 'README.md.erb', "#{destination}/README.md"
+        template 'Vagrantfile.rb.erb', "#{destination}/Vagrantfile"
+        copy_file "ansible.cfg", "#{destination}/ansible.cfg"
+        shell.indent do
+          generate_ansible "#{destination}/ansible", source
+        end
+        shell.indent do
+          generate_capistrano "#{destination}/capistrano", source
+        end
       end
     end
 
@@ -75,6 +81,7 @@ module Infrastrap
     end
 
     desc "generate_capistrano source destination", "generate capistrano code from project"
+    method_option :repo_url, :desc => "Git Repo url"
     def generate_capistrano(destination = nil, source = "./")
       destination = File.expand_path(destination || "../capistrano")
       self.bundler_lockfile ||= Bundler::LockfileParser.new(Bundler.read_file("#{source}/Gemfile.lock"))
@@ -95,8 +102,12 @@ module Infrastrap
 
     protected
 
+    def repo_url=(v)
+      @repo_url = v
+    end
+
     def repo_url
-      options[:repo_url] || ask("Please enter git repo url for deployment")
+      options[:repo_url] || @repo_url || ask("Please enter git repo url for deployment")
     end
 
     def bundler_lockfile=(p)
